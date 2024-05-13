@@ -59,7 +59,7 @@ class BaseChapter:
 
     def __post_init__(self) -> None:
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = self.title
 
     def asdict(self) -> dict:
         """

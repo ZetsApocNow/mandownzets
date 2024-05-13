@@ -4,6 +4,8 @@ import shutil
 from pathlib import Path
 from typing import Iterator
 
+from slugify import slugify
+
 import comicon
 
 from . import io, sources
@@ -121,7 +123,8 @@ def convert_progress(
             if item.name.startswith("cover"):
                 cover = item.name
                 break
-
+                
+        slugified_title=slugify(comic.metadata.title, separator=' ', replacements=[[':', '-'], ['/', ' ' ]], lowercase=False),
         if split_by_chapters:
             comicon_comics = [
                 comicon.Comic(
@@ -138,12 +141,18 @@ def convert_progress(
             ]
 
             yield len(comicon_comics)
-            existing_filenames = {file.name for file in dest_folder.iterdir() if file.is_file()}
+            existing_filenames = {
+                file.name for file in dest_folder.iterdir() if file.is_file()
+            }
             for comicomic in comicon_comics:
-                yield comicomic.metadata.title
+                #slugified_cc_title=slugify(comicomic.metadata.title)
+                slugified_cc_title=comicomic.metadata.title
+                yield slugified_cc_title
 
                 # do not overwrite existing cache
-                if f"{comicomic.metadata.title}.{to.value}" in existing_filenames:
+                slugified_cc_title=comicomic.metadata.title
+                #slugified_cc_title=slugify(comicomic.metadata.title)
+                if f"{slugified_cc_title}.{to.value}" in existing_filenames:
                     continue
                 for _ in convert_one(comicomic, comic_path, to, dest_folder):
                     ...
@@ -151,7 +160,7 @@ def convert_progress(
         else:
             comicon_comic = comicon.Comic(
                 comicon.Metadata(
-                    title=comic.metadata.title,
+                    title=slugified_title,
                     authors=comic.metadata.authors,
                     description=comic.metadata.description,
                     genres=comic.metadata.genres,
@@ -253,11 +262,8 @@ def download_progress(
         comic = query(comic)
 
     # create dir
-    try:
-        full_path = path / comic.metadata.title
-    except IOError:
-        # invalid filename
-        full_path = path / comic.metadata.title_slug
+    #slugified_title = slugify(comic.metadata.title, separator=' ', replacements=[[':', '-'], ['/', ' ' ]], lowercase=False)
+    full_path = path / slugify(comic.metadata.title, separator=' ', replacements=[[':', '-'], ['/', ' ' ]], lowercase=False)
     full_path.mkdir(exist_ok=True)
 
     # save metadata json

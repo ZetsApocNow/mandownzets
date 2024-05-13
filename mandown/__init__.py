@@ -8,7 +8,6 @@ from .api import (
     process,
     process_progress,
     query,
-    save_metadata,
 )
 from .base import BaseChapter, BaseMetadata
 from .comic import BaseComic
@@ -21,5 +20,5 @@ from .processor import (
 )
 from .processor.profiles import SupportedProfiles, all_profiles
 
-__version__ = (1, 8, 0)
+__version__ = (1, 7, 0)
 __version_str__ = ".".join(map(str, __version__))

@@ -46,7 +46,9 @@ class BaseComic:
         """
         return self.source.fetch_chapter_image_list(chapter)
 
-    def set_chapter_range(self, *, start: int | None = None, end: int | None = None) -> None:
+    def set_chapter_range(
+        self, *, start: int | None = None, end: int | None = None
+    ) -> None:
         """
         `start` and `end` are zero-indexed.
 
