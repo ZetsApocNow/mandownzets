@@ -15,7 +15,7 @@ Files will firstly go to Graphic Novels in a folder, then will be converted to c
 
 
 
-If File Juggler rule is missing,
+## If File Juggler rule is missing,
 
 - Monitor - Graphic Novels
 - If - file extension contains text cbz
@@ -23,7 +23,9 @@ If File Juggler rule is missing,
 
 
 
-If penis.bat is missing make a new one with the below code
+## If penis.bat is missing 
+
+- make a new one with the below code
 ```
 @echo off
 setlocal enabledelayedexpansion
