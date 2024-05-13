@@ -2,29 +2,29 @@ My own edits to make file downloading work, no idea how to code but it works wel
 
 
 
-Make sure penis.bat is in this folder - V:\Jellyfin\All Files\Graphic Novels
-Run File Juggler, turn on "move cbz 2"
-shift right click in this folder to open Powershell
+- Make sure penis.bat is in this folder - V:\Jellyfin\All Files\Graphic Novels
+- Run File Juggler, turn on "move cbz 2"
+- shift right click in this folder to open Powershell
 
 type in
-mandown get -c cbz -b -r 
+```mandown get -c cbz -b -r ```
 then paste url
 
-Files will firstly go to Graphic Novels in a folder, then will be converted to cbz and then File Juggler will move then to their own folders inside Moved Files
+Files will firstly go to Graphic Novels in a folder, then will be converted to cbz and then File Juggler will move them to their own folders inside Moved Files
 
 
 
 
 If File Juggler rule is missing,
 
-Monitor - Graphic Novels
-If - file extension contains text cbz
-Then - Run command - start "" "V:\Jellyfin\All Files\Graphic Novels\penis.bat"
+- Monitor - Graphic Novels
+- If - file extension contains text cbz
+- Then - Run command - ```start "" "V:\Jellyfin\All Files\Graphic Novels\penis.bat"```
 
 
 
 If penis.bat is missing make a new one with the below code
-
+```
 @echo off
 setlocal enabledelayedexpansion
 
@@ -48,3 +48,4 @@ for %%F in ("%sourceFolder%\*.cbz") do (
 echo All cbz files have been moved successfully!
 
 exit
+```
