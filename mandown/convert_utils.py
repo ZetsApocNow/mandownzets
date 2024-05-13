@@ -4,6 +4,7 @@ from typing import Iterator
 from slugify import slugify
 
 import comicon
+import subprocess
 
 
 class ConvertFormats(str, Enum):
@@ -25,7 +26,7 @@ def convert_one(
     # save comicon.json
     (comic_path / comicon.cirtools.IR_DATA_FILE).write_text(comic.to_json())
 
-    regex_pattern = r'[:/]+'
-    slugified_title=slugify(comic.metadata.title, allow_unicode=True, regex_pattern=regex_pattern, replacements=[[':', ';'], ['/', ' ' ]], lowercase=False)
+    regex_pattern = r'"[<\:!?*|/>]+"'
+    slugified_title=slugify(comic.metadata.title, allow_unicode=True, regex_pattern=regex_pattern, replacements=[[':', ';'], ['/', ''], ['?', ''], ['*', 'x'], ['|', ''], ['<', ''], ['>', ''], ['"', ''], ['!', '']], lowercase=False)
     yield from comicon.outputs.create_comic_progress(
-               comic_path, dest_folder / f"{slugified_title}", to)
+               comic_path, dest_folder / f"{slugified_title}.{to.value}")          
