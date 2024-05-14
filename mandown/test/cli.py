@@ -2,7 +2,6 @@
 
 from pathlib import Path
 from typing import Optional, cast
-from slugify import slugify
 
 import typer
 
@@ -26,11 +25,7 @@ app = typer.Typer()
 
 
 def cli_init_metadata_interactive() -> None:
-    path: Path = (
-        typer.prompt("Folder path", default=Path.cwd(), type=Path)
-        .expanduser()
-        .resolve()
-    )
+    path: Path = typer.prompt("Folder path", default=Path.cwd(), type=Path).expanduser().resolve()
 
     try:
         comic = api.load(path)
@@ -53,9 +48,7 @@ def cli_init_metadata_interactive() -> None:
         "Automatically populate with the following source URL", default=no_url_sentinel
     )
 
-    slugifiedMeta = slugify(BaseMetadata("", [], "", [], "", ""))
-    metadata = slugifiedMeta
-    #metadata = BaseMetadata("", [], "", [], "", "")
+    metadata = BaseMetadata("", [], "", [], "", "")
     chapters: list[BaseChapter] = []
 
     if source_url != no_url_sentinel:
@@ -64,7 +57,7 @@ def cli_init_metadata_interactive() -> None:
         metadata = comic.metadata
         chapters = comic.chapters
 
-    metadata.title = typer.prompt("Title", default=slugify(metadata.title) or None).strip()
+    metadata.title = typer.prompt("Title", default=metadata.title or None).strip()
     metadata.__post_init__()  # regenerate slug
 
     metadata.authors = [
@@ -85,9 +78,7 @@ def cli_init_metadata_interactive() -> None:
         "Cover art URL (enter 'EXISTS' if cover.png/jpg already exists)",
         default=metadata.cover_art or None,
     ).strip()
-    metadata.description = typer.prompt(
-        "Description", default=metadata.description or None
-    ).strip()
+    metadata.description = typer.prompt("Description", default=metadata.description or None).strip()
     metadata.url = metadata.url
 
     typer.secho("Metadata collected, now adding chapters...", fg=typer.colors.GREEN)
@@ -137,9 +128,7 @@ def cli_init_metadata_interactive() -> None:
         f"All done! Saving metadata to {path / MD_METADATA_FILE}...",
         fg=typer.colors.GREEN,
     )
-    api.init_parse_comic(
-        path, BaseComic(metadata, chapters), metadata.cover_art != "EXISTS"
-    )
+    api.init_parse_comic(path, BaseComic(metadata, chapters), metadata.cover_art != "EXISTS")
 
 
 def cli_query(url: str) -> BaseComic:
@@ -159,8 +148,9 @@ def cli_convert(
     dest_folder: Path = Path.cwd(),
     remove_after: bool = False,
     split_by_chapters: bool = False,
-    ) -> None:
-    iterator = api.convert_progress(comic_path, target_format, dest_folder, remove_after, split_by_chapters
+) -> None:
+    iterator = api.convert_progress(
+        comic_path, target_format, dest_folder, remove_after, split_by_chapters
     )
 
     is_single_conversion = comic_path.is_dir()
@@ -175,9 +165,7 @@ def cli_convert(
     len_second_conv = -1
 
     first_convert_message = (
-        f"Packing {target_format.value}(s)"
-        if is_single_conversion
-        else "Pre-converting comic"
+        f"Packing {target_format.value}(s)" if is_single_conversion else "Pre-converting comic"
     )
 
     try:
@@ -219,9 +207,7 @@ def cli_convert(
         typer.secho(f"Successfully converted to {dest_folder}", fg=typer.colors.GREEN)
 
 
-def cli_process(
-    comic_path: Path, options: list[ProcessOps], config: ProcessConfig
-) -> None:
+def cli_process(comic_path: Path, options: list[ProcessOps], config: ProcessConfig) -> None:
     if ProcessOps.NO_POSTPROCESSING in options:
         return
 
@@ -234,9 +220,7 @@ def cli_process(
         )
         raise typer.Exit(1) from err
 
-    typer.secho(
-        f"Applying processing options: {', '.join(options)}", fg=typer.colors.GREEN
-    )
+    typer.secho(f"Applying processing options: {', '.join(options)}", fg=typer.colors.GREEN)
     try:
         with typer.progressbar(
             api.process_progress(comic_path, options, config),
@@ -337,9 +321,7 @@ def process(
 @app.command(no_args_is_help=True)
 def get(
     url: str,
-    dest: Path = typer.Argument(
-        Path.cwd(), help="The destination folder to download to."
-    ),
+    dest: Path = typer.Argument(Path.cwd(), help="The destination folder to download to."),
     convert_to: ConvertFormats = typer.Option(
         "none", "--convert", "-c", help="The format to download the comic as"
     ),
@@ -443,9 +425,8 @@ def get(
     ) as progress:
         for title in progress:
             progress.label = title
-    
-    slugified_title = slugify(comic.metadata.title, separator=' ', replacements=[[':', '-'], ['/', ' ' ]], lowercase=False)
-    full_dest_folder = dest.absolute() / slugified_title
+
+    full_dest_folder = dest.absolute() / comic.metadata.title_slug
     typer.secho(
         f"Successfully downloaded {end_chapter - start_chapter} chapter(s) to {full_dest_folder}.",
         fg=typer.colors.GREEN,
@@ -459,17 +440,15 @@ def get(
                 output_profile=size_profile,
             )
         except Exception as err:
-            typer.secho(
-                f"Could not apply processing options: {err}", fg=typer.colors.RED
-            )
+            typer.secho(f"Could not apply processing options: {err}", fg=typer.colors.RED)
             raise typer.Exit(1) from err
 
-        cli_process(dest / slugified_title, processing_options, config)
+        cli_process(dest / comic.metadata.title_slug, processing_options, config)
 
     # convert
     if convert_to != ConvertFormats.NONE:
         cli_convert(
-            dest / slugified_title,
+            dest / comic.metadata.title_slug,
             convert_to,
             dest,
             remove_after,
@@ -480,9 +459,7 @@ def get(
 @app.command(name="init-metadata")
 def init_metadata(
     path: Optional[Path] = typer.Argument(None, help="The folder to initialise"),
-    source_url: Optional[str] = typer.Argument(
-        None, help="The url to get metadata from"
-    ),
+    source_url: Optional[str] = typer.Argument(None, help="The url to get metadata from"),
     download_cover: bool = typer.Option(
         False,
         "--download-cover",
@@ -503,9 +480,7 @@ def init_metadata(
         return cli_init_metadata_interactive()
 
     if (path / MD_METADATA_FILE).is_file():
-        return typer.echo(
-            "Metadata already found. Please remove it to create new metadata."
-        )
+        return typer.echo("Metadata already found. Please remove it to create new metadata.")
 
     try:
         if source_url is not None:
@@ -559,10 +534,7 @@ def callback(
     if list_profiles:
         typer.echo("Available profiles:")
         typer.echo(
-            "\n".join(
-                f" - {profile.name}: {profile.id!r}"
-                for profile in all_profiles.values()
-            )
+            "\n".join(f" - {profile.name}: {profile.id!r}" for profile in all_profiles.values())
         )
         raise typer.Exit()
 
